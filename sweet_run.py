@@ -70,24 +70,53 @@ RAIO_VISAO=150
 
 obstaculos=[
 
-
-
+Rect((380,80), (20,180))
+  
 ]
 
+waypoints= [
+    (450,365),
+    (365,449)
+]
+global waypoint_atual
+waypoint_atual=0
 
 
+PASSO_RAIO=10
+RAIO_VISAO=150
 def bola(maus, bons, obs, RAIO_VISAO):
 
     lx = bons.x-maus.x
     ly = maus.y-bons.y
     longe = math.hypot(lx,ly)
 
-
-
-
     if RAIO_VISAO < longe:
         return False
+
+
+    if RAIO_VISAO > longe:
+        return True
     
+    if longe == 0:
+        return True
+
+
+    dir_x = dx / longe 
+    dir_y = dy / longe
+
+
+    andos =int(longe / PASSO_RAIO)
+
+    for p in range (1 , passos):
+        ponto_x = maus.x + dir_x * (p * PASSO_RAIO)
+        ponto_y = maus.y + dir_y * (p * PASSO_RAIO)
+
+        for retangulo in obs:
+            if retangulo.collidepoint((ponto_x, ponto_y)):
+                return False
+
+
+    return True
 
 
 
@@ -101,13 +130,32 @@ def draw():
     screen.fill((255, 182, 193))
 
     if estado_jogo == "JOGANDO":
+        for retangulo in obstaculos:
+            screen.draw.rect(retangulo, "brown")
 
+
+
+        
         eddy.draw()
         loopy.draw()
         crong.draw()
         petty.draw()
         moeda.draw()
 
+        for i,wp in enumerate(waypoints):
+            screen.draw.filled_circle(wp,14, "darkred")
+        prox_wp = waypoints[(i+1)% len(waypoints)]
+        screen.draw.line(wp, prox_wp, ("darkgreen"))
+
+        screen.draw.circle((crong.x, crong.y),RAIO_VISAO, "olivedrab")
+        screen.draw.circle((petty.x, petty.y),RAIO_VISAO, "olivedrab")
+
+        if bola(crong,eddy,obstaculos, RAIO_VISAO):
+            screen.draw.line((crong.x, crong.y), (eddy.x,eddy.y),"darkkhaki")
+
+        if bola(petty,loopy,obstaculos, RAIO_VISAO):
+            screen.draw.line((petty.x, petty.y), (loopy.x,loopy.y),"purple")
+        
         for m in moedas_extra:
             m.draw()
 
@@ -195,22 +243,43 @@ def draw():
             "Pressione [R] para Tentar Novamente",
             center=(WIDTH // 2, 400),
             fontsize=26,
-            color="palevioletred"
-        )
+            color="palevioletred")
+
+    
+  
+  
+  
+  
+        
+
+
+
 
 
 def colidiu(objeto1, objeto2):
     return objeto1.colliderect(objeto2)
 
 
-def mover_inimigo(inimigo, alvo):
+def mover_inimigo(inimigo,heroi):
+    global waypoint_atual
+    vendo_heroi = bola(inimigo, heroi, obstaculos, RAIO_VISAO)
 
-    if alvo.x < inimigo.x:
+    if vendo_heroi==True:
+        alvo_x= heroi.x
+        alvo_y = heroi.y
+
+    else:
+        alvo_x, alvo_y = waypoints[waypoint_atual]
+        longe_waypoints = math.hypot(alvo_x - inimigo.x, alvo_y - inimigo.y )
+        if longe_waypoints  < 5:
+            waypoint_atual = (waypoint_atual + 1 ) % 2 
+
+    if alvo_x < inimigo.x:
         inimigo.x -= 1.0
     else:
         inimigo.x += 1.0
 
-    if alvo.y < inimigo.y:
+    if alvo_y < inimigo.y:
         inimigo.y -= 1.0
     else:
         inimigo.y += 1.0
