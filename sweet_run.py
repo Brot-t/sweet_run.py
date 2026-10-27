@@ -1,6 +1,7 @@
 import pygame, pgzrun, random,os,math
 from PIL import Image
 
+
 WIDTH = 800
 HEIGHT = 600
 TITLE = "sweet_run"
@@ -82,8 +83,8 @@ global waypoint_atual
 waypoint_atual=0
 
 
-PASSO_RAIO=10
-RAIO_VISAO=150
+PASSO_RAIO=0.5
+RAIO_VISAO=500
 def bola(maus, bons, obs, RAIO_VISAO):
 
     lx = bons.x-maus.x
@@ -101,18 +102,18 @@ def bola(maus, bons, obs, RAIO_VISAO):
         return True
 
 
-    dir_x = dx / longe 
-    dir_y = dy / longe
+    dir_x = lx / longe 
+    dir_y = ly / longe
 
 
     andos =int(longe / PASSO_RAIO)
 
-    for p in range (1 , passos):
+    for p in range (1 , andos):
         ponto_x = maus.x + dir_x * (p * PASSO_RAIO)
         ponto_y = maus.y + dir_y * (p * PASSO_RAIO)
 
-        for retangulo in obs:
-            if retangulo.collidepoint((ponto_x, ponto_y)):
+        for Rect in obs:
+            if Rect.collidepoint((ponto_x, ponto_y)):
                 return False
 
 
@@ -132,6 +133,7 @@ def draw():
     if estado_jogo == "JOGANDO":
         for retangulo in obstaculos:
             screen.draw.rect(retangulo, "brown")
+        sounds.enquantos.play()
 
 
 
@@ -329,7 +331,7 @@ def reiniciar_jogo():
 def update():
 
     global pontos, vidas, estado_jogo
-
+   
     if estado_jogo in ("VITORIA", "GAMEOVER"):
 
         if keyboard.r:
@@ -339,6 +341,7 @@ def update():
 
     if keyboard.a:
         eddy.x -= VELOCIDADE_JOGADOR
+        
 
     if keyboard.d:
         eddy.x += VELOCIDADE_JOGADOR
@@ -385,10 +388,11 @@ def update():
 
             moedas_extra.remove(m)
             pontos += 2
-
+            sounds.toque.play()
 
     if pontos >= PONTOS_VITORIA:
         estado_jogo = "VITORIA"
+        sounds.ganhos.play()
 
     if (
         colidiu(eddy, crong)
@@ -396,11 +400,12 @@ def update():
         or colidiu(eddy, petty)
         or colidiu(loopy, crong)
     ):
-
-        vidas -= 1
+        
+        vidas += 1
 
         if vidas <= 0:
             estado_jogo = "GAMEOVER"
+            sounds.maus.play()
 
         else:
 
